@@ -1,19 +1,21 @@
+import 'package:cubit/Domain/auth/model/login_request.dart';
+import 'package:cubit/Domain/auth/model/login_response.dart';
+import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 class AuthRepository {
-  Dio _dio = Dio();
+  final Dio _dio = Dio();
 
-  Future<String> signInUserWithEmailandPassword({
-    @required String? email,
-    @required String? password,
-  }) async {
+  Future<Either<String, LoginResponse>> signInUserWithEmailandPassword(
+      {required LoginRequest loginRequest}) async {
     Response _response;
-
-    Map<String, dynamic> requestData = {"email": email, "password": password};
-    _response =
-        await _dio.post("https://reqres.in/api/login", data: requestData);
-    String _result = _response.data.toString();
-    return _result;
+    try {
+      _response = await _dio.post("https://reqres.in/api/login",
+          data: loginRequest.toJson());
+      LoginResponse _loginResp = LoginResponse.fromJson(_response.data);
+      return Right(_loginResp);
+    } on DioError catch (e) {
+      return Left(e.toString());
+    }
   }
 }
