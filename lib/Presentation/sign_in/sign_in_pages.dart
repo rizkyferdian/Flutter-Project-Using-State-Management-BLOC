@@ -1,4 +1,5 @@
 import 'package:cubit/Application/auth/cubit/auth_cubit.dart';
+import 'package:cubit/Domain/auth/model/login_request.dart';
 import 'package:cubit/Presentation/home/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,12 +22,23 @@ class _SignInPagesState extends State<SignInPages> {
           listener: (context, state) {
             // TODO: implement listener
             if (state is AuthError) {
-              print(state.errorMessage);
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Error"),
+                  content: Text(state.errorMessage),
+                ),
+              );
             } else if (state is AuthLoading) {
               print("Loading");
             } else if (state is AuthLoginSuccess) {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => HomePage()));
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => HomePage(
+                    loginResponse: state.datalogin,
+                  ),
+                ),
+              );
             }
           },
           builder: (context, state) {
@@ -114,9 +126,9 @@ class _SignInPagesState extends State<SignInPages> {
         primary: Colors.blueGrey[400],
       ),
       onPressed: () {
-        context
-            .read<AuthCubit>()
-            .signInUser(_emailController.text, _passwordController.text);
+        final _requestData = LoginRequest(
+            email: _emailController.text, password: _passwordController.text);
+        context.read<AuthCubit>().signInUser(_requestData);
       },
       child: Text(
         'Login',
